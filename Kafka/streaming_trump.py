@@ -16,7 +16,9 @@ if __name__ == '__main__':
 
     myStreamListener = MyStreamListener2()
     myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
-
+    
+    # Establish your filters
+    
     SPAIN_GEOBOX = [-9.38,36.05,3.35,43.75]
     myStream.filter(languages=["es"], locations=SPAIN_GEOBOX)
 
