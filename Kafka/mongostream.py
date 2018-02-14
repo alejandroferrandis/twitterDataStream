@@ -6,10 +6,10 @@ from pymongo import MongoClient
 
 MONGO_HOST = 'mongodb://alexander:alexander123@localhost:27017/twitter' 
 
-consumer_key = 'fIiBGbdnptl6xvNWDItZ7yodh'
-consumer_secret = '1CQOgjh9TE5KMv0rGjMf6DPXeDRprsEdr4KqeImsf3GCrH7v0j'
-access_token = '952980946978070535-SEpyDDiuGL4fiYyV5ZwPAd5CqzSGlhk'
-access_token_secret = 'njtsvXJmDGVnmhxQ3e49RWGggJ6Le4Piv9uMCQw6hTfT0'
+consumer_key = 'your key'
+consumer_secret = 'your secret'
+access_token = 'your token'
+access_token_secret = 'your token secret'
 
 # WORDS = ['#data', '#science', '#twitter']
 	
