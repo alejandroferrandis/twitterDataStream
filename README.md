@@ -91,7 +91,7 @@ $ git clone .....
 
 Añadiremos nuestras claves de twitter dentro del archivo "secret.py" Luego introduciremos el usuario, contraseña y nombre de la base de datos dentro el archivo mongostream.py
 
-![Alt text](alejandroferrandis/twitterDataStream/blob/master/Images/imagen1.png?raw=true "Title")
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen1.png)
 
 
 
