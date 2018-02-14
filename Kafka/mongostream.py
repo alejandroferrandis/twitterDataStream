@@ -3,14 +3,13 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 import json
 from pymongo import MongoClient
+from comun.util import *
+from comun.listeners2 import *
 
 MONGO_HOST = 'mongodb://<user>:<password>@localhost:27017/<BBDD>' 
 
-consumer_key = 'your key'
-consumer_secret = 'your secret'
-access_token = 'your token'
-access_token_secret = 'your token secret'
 
+# Seguimiento palabras twitter
 # WORDS = ['#data', '#science', '#twitter']
 	
 class StdOutListener(StreamListener):
