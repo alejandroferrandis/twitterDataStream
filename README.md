@@ -112,3 +112,12 @@ Estas bases de datos podrán ser analizadas posteriormente con dbKoda. DbKoda es
 
 ![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen2.png)
 
+## Variaciones
+
+Para realizar de manera mas cómoda la recolección de datos podemos usar otra herramienta que se dedique específicamente a ello. DigitalOcean ofrece una plataforma barata para la creación de una maquina virtual, la cual podemos configurar para que ejecute este mismo programa.
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen3.png)
+
+Añadiendo acceso ssh podremos entrar desde nuestra maquina de manera sencilla
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen4.png)
