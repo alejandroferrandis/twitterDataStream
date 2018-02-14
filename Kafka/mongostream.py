@@ -4,7 +4,7 @@ from tweepy import Stream
 import json
 from pymongo import MongoClient
 
-MONGO_HOST = 'mongodb://alexander:alexander123@localhost:27017/twitter' 
+MONGO_HOST = 'mongodb://<user>:<password>@localhost:27017/<BBDD>' 
 
 consumer_key = 'your key'
 consumer_secret = 'your secret'
@@ -27,7 +27,7 @@ class StdOutListener(StreamListener):
             db = client.twitter
             datajson = json.loads(data)
             print(datajson['text'])
-            tweet = db.twitter_search.insert(datajson)
+            tweet = db.<BBDD_Collection>.insert(datajson)
         except Exception as e:
             print(e)
     
@@ -36,6 +36,8 @@ auth.set_access_token(access_token, access_token_secret)
 
 l = StdOutListener()
 stream = Stream(auth, l)
+
+# Establish your filters
 
 # print("tracking: " + str(WORDS))
 # streamer.filter(track=WORDS)
