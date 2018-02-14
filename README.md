@@ -81,13 +81,16 @@ Creamos nuestra base de datos y un usuario con permisos de administrador
 
 ```
 
-Descargamos el siguiente repositorio
+Descargamos este repositorio
 
 ```bash
 cd
-$ git clone 
+$ git clone .....
 
 ```
+
+Añadiremos nuestras claves de twitter dentro del archivo "secret.py" Luego introduciremos el usuario, contraseña y nombre de la base de datos dentro el archivo mongostream.py
+
 
 
 
