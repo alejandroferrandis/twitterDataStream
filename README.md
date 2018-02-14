@@ -121,3 +121,80 @@ Para realizar de manera mas cómoda la recolección de datos podemos usar otra h
 Añadiendo acceso ssh podremos entrar desde nuestra maquina de manera sencilla
 
 ![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen4.png)
+
+## 3. Kafka stream
+
+Kafka es otra herramienta que se basa en el sistema de subscriptor-cliente para la publicacion de los datos en diferentes plataformas.
+Dado que utiliza los llamados 'topics', podemos de ser necesario, ir añadiendo mas tópicos, haciendo de ella una herramienta con alta escalabilidad.
+
+Lo primero que deberemos hacer será descargar Kafka en nuestro sistema:
+```
+$ cd
+$ wget http://apache.rediris.es/kafka/1.0.0/kafka_2.11-1.0.0.tgz
+$ tar -xzf kafka_2.11-1.0.0.tgz
+
+$ echo 'export KAFKA_HOME=$HOME/kafka_2.11-1.0.0' >> $HOME/.bashrc
+$ echo 'export PATH=$KAFKA_HOME/bin:$PATH' >> $HOME/.bashrc
+$ source $HOME/.bashrc
+
+```
+
+Una vez realizado, arrancamos nuestro servidor 
+
+```
+$ bin/zookeeper-server-start.sh config/zookeeper.properties
+$ bin/kafka-server-start.sh config/server.properties
+
+```
+
+Creamos nuestro tópico
+```
+$ bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic <nombre tópico>
+```
+
+Si queremos ver el los datos que se van añadiendo lo podemos hacer con:
+```
+$ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic <nombre tópico> --from-beginning 
+```
+
+Los datos que vamos almacenando pueden ser introducidos en HDFS para su posterior análisis usando flume. Para ello deberemos crear un archivo '<nombre_archivo>.conf' con el siguiente contenido
+
+```
+flume1.sources = kafka-source-1
+flume1.channels = hdfs-channel-1
+flume1.sinks = hdfs-sink-1
+flume1.sources.kafka-source-1.type = org.apache.flume.source.kafka.KafkaSource
+flume1.sources.kafka-source-1.zookeeperConnect = localhost:2181
+flume1.sources.kafka-source-1.topic =<nombre tópico>
+flume1.sources.kafka-source-1.batchSize = 100
+flume1.sources.kafka-source-1.channels = hdfs-channel-1
+
+flume1.channels.hdfs-channel-1.type = memory
+flume1.sinks.hdfs-sink-1.channel = hdfs-channel-1
+flume1.sinks.hdfs-sink-1.type = hdfs
+
+flume1.sinks.hdfs-sink-1.hdfs.fileType = DataStream
+flume1.sinks.hdfs-sink-1.hdfs.filePrefix = test-events
+flume1.sinks.hdfs-sink-1.hdfs.useLocalTimeStamp = true
+flume1.sinks.hdfs-sink-1.hdfs.path = /tmp/kafka/%{topic}/%y-%m-%d
+flume1.sinks.hdfs-sink-1.hdfs.rollCount=100
+flume1.sinks.hdfs-sink-1.hdfs.rollSize=0
+flume1.channels.hdfs-channel-1.capacity = 10000
+flume1.channels.hdfs-channel-1.transactionCapacity = 1000
+
+```
+
+Una vez creado, arrancamos nuestro servicio:
+
+```
+flume-ng agent -n flume1 -c conf -f <nombre_archivo>.conf -    Dflume.root.logger=INFO,console
+```
+
+Los datos serán guardados dentro de la carpeta 
+```
+/tmp/kafka/%{topic}/%y-%m-%d
+```
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen5.png)
+
+Pasando el archivo posteriormente a hive podríamos realizar el ánalisis del mismo o usar Impala y un conector ODBC para analizar los parametros necesarios en herramientas como Spotfire o Tableau.
