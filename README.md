@@ -91,7 +91,24 @@ $ git clone .....
 
 Añadiremos nuestras claves de twitter dentro del archivo "secret.py" Luego introduciremos el usuario, contraseña y nombre de la base de datos dentro el archivo mongostream.py
 
+Si todo ha salido bien, ejecutando el siquiente comando
+
+```bash
+
+$ mongo
+
+```
+
+```bash
+
+> db.<nombre BBDD>.find()
+
+```
+Debería mostrarnos el contenido que se ha ido almacenando
+
 ![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen1.png)
 
+Estas bases de datos podrán ser analizadas posteriormente con dbKoda. DbKoda es una herramienta especializada para el análisis de bases de datos en MongoDB. Se trata de una herramienta muy potente y que permite realizar de manera sencilla la conexion con nuestro servidor.
 
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen2.png)
 
