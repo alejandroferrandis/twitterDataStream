@@ -5,6 +5,18 @@ Este proyecto muestra el proceso de creación de una arquitectura simple para el
 Este artículo ha sido redactado por motivos académicos y su propósito no es otro que el de mostrar una solución ejemplificada de el flujo de datos mediante el uso de diferentes herramientas, desde la captura hasta la transformación de los datos, no siendo en ningún caso una solución óptima.
 La idea general es la generación de un sistema centralizado para la distribución de mensajes desde diferentes fuentes de datos a múltiples clientes, capaces de consumirlos.
 
+En este proyecto nos centraremos en la adquisición de datos a través de 3 sistemas diferentes:
+
+   MongoDB
+   Kafka
+   SQL
+
+Cada sistema será independiente el uno del otro, siendo la fuente de información (twitter) la misma para los 3.
+
+Arquitectura de nuestro sistema:
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen6.png)
+
 ## 1.	Pre-requisitos y configuración
 
 Nuestro sistema estará montado en una máquina virtual Cloudera. Este sistema incluye ya de forma predeterminada las herramientas básicas de Big data, nosotros únicamente deberemos retocarla un poco para ajustarla a nuestras necesidades:
@@ -198,3 +210,209 @@ Los datos serán guardados dentro de la carpeta
 ![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen5.png)
 
 Pasando el archivo posteriormente a hive podríamos realizar el ánalisis del mismo o usar Impala y un conector ODBC para analizar los parametros necesarios en herramientas como Spotfire o Tableau.
+
+
+## 4. Twitter stream a SQL
+
+SQL es un lenguaje basado, a diferencia de los otros dos, en un sistema de consulta relacional. Las consultas y adquisiciones de datos que se realizan en el mismo estan siempre estructuradas, permitiendo así una alta funcionalidad de los mismos. Sin embargo su velocidad de procesamiento respecto a los otros dos es bastante lenta y el volumen de datos que puede tratar para la realizacion de análisis es inferior.
+
+Lo primero que deberemos realizar será la creación de nuestra base de datos. Para ello entraremos en la plataforma mysql:
+
+```
+$ mysql -uroot -pcloudera
+```
+
+Le indicamos el nombre de nuestra BBDD deseada
+
+```
+mysql> CREATE DATABASE <nombre_BBDD>
+```
+Una vez creada, mediante el comando 'quit' saldremos de la plataforma.
+
+```
+mysql> quit;
+```
+
+Para la adquisición de los datos usaremos una librería llamada mysql.connector. Buscaremos primero el modulo:
+
+```
+$ pip search mysql-connector | grep --color mysql-connector-python
+
+
+mysql-connector-python-rf (version)        - MySQL driver written in Python
+mysql-connector-python (version)           - MySQL driver written in Python
+```
+
+Instalaremos mysql-connector-python-rf
+
+```
+$ pip install mysql-connector-python-rf
+```
+
+Una vez tengamos ya toda nuestra plataforma preparada, podremos empezar con la toma de datos. Para la adquisición de estos, deberemos valorar primero cuales son los que nos interesa recoger, puesto que en SQL los que vamos a almacenar son aquellos que nosotros le solicitemos.
+
+En nuestro caso serán los siguientes:
+
+ID
+NOMBRE
+NOMBRE_USUARIO
+TEXTO
+DESCRIPCION
+SEGUIDORES
+AMIGOS
+LOCALIDAD
+GEOBOX
+CANTIDAD_FAVORITOS
+RETWEETS
+FAVORITOS
+
+Creamos el siguiente archivo .py para producción de las tablas en nuestra base de datos.
+
+```
+import mysql.connector
+from mysql.connector import errorcode
+from datetime import datetime  
+from datetime import timedelta  
+
+def date_today():
+
+    dateAndTime = datetime.now() + timedelta(hours = 9  )
+
+    race = '{0}'.format(dateAndTime.day)
+
+    if dateAndTime.month == 1:
+
+        race += 'Enero'
+
+    if dateAndTime.month == 2:
+    
+        race += 'Febrero'
+
+    if dateAndTime.month == 3:
+    
+        race += 'Marzo'
+
+    if dateAndTime.month == 4:
+    
+        race += 'Abril'
+    
+    if dateAndTime.month == 5:
+    
+        race += 'Mayo'
+      
+    if dateAndTime.month == 6:
+    
+        race += 'Junio'
+    
+    if dateAndTime.month == 7:
+    
+        race += 'Julio'
+    
+    if dateAndTime.month == 8:
+    
+        race += 'Agosto'
+    
+    if dateAndTime.month == 9:
+    
+        race += 'Septiembre'
+    
+    if dateAndTime.month == 10:
+    
+        race += 'Octubre'
+    
+    if dateAndTime.month == 11:
+    
+        race += 'Noviembre'
+    
+    if dateAndTime.month == 12:
+
+        race += 'Diciembre'
+
+    race += '{0}'.format(dateAndTime.year)
+
+    print("El nombre de la tabla es: " + race)
+
+    return race
+
+#connect to db
+cnx = mysql.connector.connect(user='root',password='cloudera', database='<nombre_BBDD>')
+
+#setup cursor
+cursor = cnx.cursor()
+
+entrada1 = date_today()
+
+
+table = (
+    """CREATE TABLE `%s` (ID VARCHAR(50) DEFAULT NULL, NOMBRE VARCHAR(30) DEFAULT NULL, NOMBRE_USUARIO VARCHAR(30) DEFAULT NULL, 
+       TEXTO VARCHAR(160) DEFAULT NULL, DESCRIPCION VARCHAR(160) DEFAULT NULL, SEGUIDORES VARCHAR(8) DEFAULT NULL, 
+       AMIGOS VARCHAR(5) DEFAULT NULL, LOCALIDAD VARCHAR(50) DEFAULT NULL, GEOBOX VARCHAR(120) DEFAULT NULL, 
+       CANTIDAD_FAVORITOS VARCHAR(8) DEFAULT NULL, RETWEETS VARCHAR(8) DEFAULT NULL, FAVORITOS VARCHAR(8) DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1""" % (entrada1))
+
+
+
+
+try:
+    print("Creating table.... ")
+    cursor.execute(table)
+except mysql.connector.Error as err:
+    if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+        print("Error, already exists.")
+    else:
+        print(err.msg)
+else:
+    print("OK")
+
+cursor.close()
+cnx.close()
+```
+
+La función date_today() se encarga de nombrar nuestra tabla de forma automatica. Dado que se trata de la adquisición de datos mediante streaming a una tabla SQL y desconocemos la rapidez con la que nos van a llegar los mismos, he decidido, que todas las entradas de la tabla sean VARCHAR.
+
+Lo siguiente será adquirir nuestros datos. El archivo 'upload_tweets_sql.py' se encarga de ello. Al ejecutarlo nos irá apareciendo en pantalla el texto de cada uno de los tweets que sea importado en nuestro sistema.
+
+Tras tener nuestra primera tabla montada, podremos importarla mediante sqoop para que sea analizada posteriormente con Hive, Impala o Tableau. El siguiente comando se ocupa de la importación de estos. 
+
+Nota: Al no tener primary key necesitamos o bien un '--split by' o '-m 1' para la importación de los datos
+
+```
+sqoop import \
+--connect jdbc:mysql://localhost/<nombre_BBDD> \
+--table <nombre_tabla> --fields-terminated-by '\t' \
+--username root \
+--password cloudera \
+--target-dir /user/root/user_data \
+-m 1
+```
+
+Comprobamos que la importación se ha realizado de forma correcta.
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen7.png)
+
+Si la importación se ha realizado sin problemas podremos pasar a importar nuestro archivo a hive. Entraremos en la plataforma mediante el siguiente comando:
+
+```
+$ hive
+```
+
+Y crearemos la tabla con los registros de nuestra tabla SQL
+
+```
+hive > CREATE EXTERNAL TABLE tweets_prueba
+(ID STRING, NOMBRE STRING, NOMBRE_USUARIO STRING,
+TEXTO STRING, DESCRIPCION STRING, SEGUIDORES STRING,
+AMIGOS STRING, LOCALIDAD STRING, GEOBOX STRING,
+CANTIDAD_FAVORITOS STRING, RETWEETS STRING, FAVORITOS STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+LOCATION '/user/root/user_data';
+```
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen8.png)
+
+Ya por ultimo solo nos quedaría acceder a la base de datos a traves de Tableau mediante el conector ODBC Impala, siendo el servidor 'localhost', el puerto '21050' y la base de datos 'IMPALA'.
+
+![alt text](https://github.com/alejandroferrandis/twitterDataStream/blob/master/Images/imagen9.png)
+
+Como se puede observar, existen fallos en los registros. Esto se puede deber en parte a que nuestra conexion en streaming no es capaz de almacenar tan rapido los tweets como le van llegando. La solción a este problema sería crear un archivo JSON temporal que almacene dichos datos y estos sean luego transferidos a SQL sin problemas.
+
+
